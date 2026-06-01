@@ -1,101 +1,37 @@
-"use client";
-import { useState } from "react";
+import Link from 'next/link';
 
-export default function BoletoFlow() {
-  const [faturas, setFaturas] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const processarArquivo = async (evento: React.ChangeEvent<HTMLInputElement>) => {
-    const arquivo = evento.target.files?.[0];
-    if (!arquivo) return;
-
-    setLoading(true);
-    const formData = new FormData();
-    formData.append("arquivo", arquivo);
-
-    try {
-      // Dispara contra o servidor Python em segundo plano
-      const resposta = await fetch("http://localhost:8000/api/extrair", {
-        method: "POST",
-        body: formData,
-      });
-      
-      const json = await resposta.json();
-
-      if (json.status === "sucesso") {
-        // Acumula os novos boletos com os que já estavam na tela
-        setFaturas((estadoAnterior) => [...estadoAnterior, ...json.boletos]);
-      } else {
-        alert(json.mensagem); 
-      }
-    } catch (erro) {
-      alert("O servidor de extração falhou ou está offline.");
-    } finally {
-      setLoading(false);
-      // Limpa o input para permitir o upload do mesmo arquivo se necessário
-      evento.target.value = ''; 
-    }
-  };
-
+export default function SynthesisHome() {
   return (
-    <div className="max-w-4xl mx-auto p-8 text-black">
-      
-      {/* 1. PAINEL DE CONTROLE (Obliterado na Impressão) */}
-      <div className="print:hidden mb-12 bg-white p-6 shadow rounded border border-gray-200">
-        <h1 className="text-3xl font-bold mb-2">BoletoFlow Engine</h1>
-        <p className="text-gray-600 mb-6">Processe seus arquivos PDF. O sistema acumulará os resultados abaixo.</p>
-        
-        <input 
-          type="file" 
-          accept="application/pdf"
-          onChange={processarArquivo} 
-          disabled={loading}
-          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
-        />
-        {loading && <p className="mt-4 text-yellow-600 font-medium animate-pulse">Varrendo geometria do documento...</p>}
-      </div>
+    <div className="min-h-screen bg-black text-white flex flex-col justify-center items-center p-8">
+      <div className="max-w-2xl w-full">
+        {/* A Marca */}
+        <h1 className="text-4xl md:text-6xl font-bold tracking-tighter mb-4">
+          Synthesis BR.
+        </h1>
+        <p className="text-gray-400 text-lg md:text-xl mb-12 border-l-2 border-gray-700 pl-4">
+          Engenharia de software tática e automação de dados B2B. Construindo infraestrutura invisível para operações de alto volume.
+        </p>
 
-      {/* 2. ÁREA DE RESULTADOS (Visível na Tela e na Folha A4) */}
-      {faturas.length > 0 && (
-        <div className="print:m-0">
+        {/* O Ecossistema de Produtos */}
+        <div className="space-y-6">
+          <h2 className="text-sm uppercase tracking-widest text-gray-500 font-semibold">Ecossistema Ativo</h2>
           
-          {/* Cabeçalho de Resultados: Os botões somem na impressão */}
-          <div className="print:hidden flex justify-between items-center mb-6 border-b pb-4">
-            <h2 className="text-xl font-bold text-gray-800">Lote Extraído ({faturas.length})</h2>
-            <button 
-              onClick={() => window.print()} 
-              className="bg-black text-white px-6 py-2 rounded font-medium hover:bg-gray-800 transition-colors"
-            >
-              Imprimir Comprovantes
-            </button>
-          </div>
-
-          {/* O Relatório: Quebras de página controladas */}
-          <div className="space-y-4 print:space-y-6">
-            {faturas.map((fatura, indice) => (
-              <div 
-                key={indice} 
-                className="bg-gray-50 border border-gray-200 p-6 rounded print:bg-transparent print:border-b print:border-gray-400 print:rounded-none print:p-2 print:break-inside-avoid"
-              >
-                <p className="text-sm text-gray-500 uppercase tracking-wide print:text-black">Linha Digitável</p>
-                <p className="font-mono text-sm sm:text-base tracking-tight mb-4 text-black">{fatura.codigo}</p>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-500 print:text-black">Vencimento</p>
-                    <p className="font-bold text-lg">{fatura.vencimento}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 print:text-black">Valor (R$)</p>
-                    <p className="font-bold text-lg">{fatura.valor}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          
+          <Link href="/boletoflow" className="block group">
+            <div className="border border-gray-800 bg-gray-900 p-6 rounded hover:border-gray-600 transition-colors">
+              <h3 className="text-2xl font-bold mb-2 group-hover:text-blue-400 transition-colors">BoletoFlow Engine</h3>
+              <p className="text-gray-400 text-sm">
+                Plataforma de extração vetorial e processamento em lote de faturas financeiras. Elimine o gargalo do fluxo de caixa.
+              </p>
+            </div>
+          </Link>
         </div>
-      )}
+
+        {/* Rodapé Corporativo */}
+        <div className="mt-24 pt-8 border-t border-gray-900 text-gray-600 text-sm flex justify-between">
+          <p>© {new Date().getFullYear()} Synthesis BR. Todos os direitos reservados.</p>
+          <p>Maceió, AL - Brasil</p>
+        </div>
+      </div>
     </div>
   );
 }
