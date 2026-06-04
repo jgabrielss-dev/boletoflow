@@ -15,7 +15,7 @@ export default function BoletoFlow() {
 
     try {
       // Dispara contra o servidor Python em segundo plano
-      const resposta = await fetch("http://localhost:8000/api/extrair", {
+      const resposta = await fetch("https://regexengineforbills.onrender.com", {
         method: "POST",
         body: formData,
       });
