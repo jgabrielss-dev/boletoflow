@@ -1,49 +1,42 @@
-# BoletoFlow Web 🪟
+# Synthesis Core: B2B Multi-Tenant Architecture
 
-Interface de usuário e motor de renderização B2B para o sistema de extração em lote de faturas e boletos bancários.
+A robust, production-ready Multi-Tenant SaaS foundation engineered with **Next.js** and **Supabase**. Originally architected to serve as the central hub and API gateway for a financial document extraction engine (BoletoFlow), this repository demonstrates advanced database isolation, automated user provisioning, and strict route security for B2B applications.
 
-## 🎯 O Foco no Produto
+## 🚀 Architectural Overview
 
-Enquanto o back-end processa a geometria complexa dos PDFs, o **BoletoFlow Web** foi arquitetado para resolver o problema na ponta final da operação: a visualização rápida e a impressão limpa. O operador financeiro não tem tempo para baixar planilhas complexas ou relatórios em novos PDFs; ele precisa da informação imediatamente na tela e no papel.
+Building a B2B SaaS requires strict data boundaries between corporate clients (tenants). This architecture solves the isolation problem at the database level using PostgreSQL Row Level Security (RLS) and schema separation, paired with a Next.js middleware for instant route protection.
 
-Esta aplicação consome a API do motor de extração, gerencia o estado de múltiplos uploads de forma cumulativa e utiliza o próprio motor de renderização do navegador para gerar comprovantes físicos, eliminando a necessidade de bibliotecas pesadas de geração de PDF no lado do cliente.
+## 🛠️ Tech Stack
+- **Frontend & API Gateway:** Next.js (App Router)
+- **Authentication & Database:** Supabase (Auth, PostgreSQL)
+- **Styling:** Tailwind CSS (Brutalist/Corporate UI)
+- **External Integration:** Ready to consume isolated Python microservices (e.g., Regex processing APIs)
 
-## 🧠 Arquitetura e Decisões de Engenharia
+---
 
-O desenvolvimento desta interface foi guiado por eficiência tática e isolamento de escopo:
+## 🧠 Core Engineering Features
 
-1. **Acúmulo de Estado Imutável (Batch Memory):** A interface abandona o modelo "1 para 1" (sobrescrever resultados a cada novo upload). Através do uso do *Spread Operator* e gerenciamento de estado global no React, o sistema acumula faturas sucessivas em um único *Array*, permitindo que o usuário construa um lote massivo de boletos subindo dezenas de PDFs separados antes de finalizar a operação.
-2. **Isolamento de Árvore DOM para Impressão:** Para entregar uma experiência de "One-Click Print" (`Ctrl+P`), a árvore de componentes foi desenhada com camadas estritas de CSS. O painel de controle e formulários são obliterados dinamicamente na mídia de impressão (`print:hidden`), fazendo com que a matriz de dados suba naturalmente para o topo da folha A4 em branco.
-3. **Tipografia Responsiva de Alta Precisão:** Linhas digitáveis possuem 47 a 48 caracteres que não podem sofrer quebras no papel. A tipografia do recibo foi calibrada com fontes monoespaçadas, rastreamento apertado (`tracking-tight`) e escalonamento responsivo (`text-sm sm:text-base`) para garantir que viúvas tipográficas jamais ocorram, mantendo o padrão de legibilidade corporativa.
+### 1. Absolute Tenant Isolation (Supabase Schema Design)
+To prevent cross-tenant data leakage, the database architecture heavily separates authentication from business logic:
+- Strict decoupling of Supabase's native `auth.users` schema from the custom `public.profiles` schema.
+- Data access is governed by **Row Level Security (RLS)** policies, ensuring that authenticated users can only query and mutate records explicitly tied to their assigned `tenant_id`.
 
-## 🛠️ Stack Tecnológica
+### 2. Automated Database Provisioning (PL/pgSQL Triggers)
+Manual user creation is prone to errors. This system implements native PostgreSQL triggers (`PL/pgSQL`) that listen to the `auth.users` schema. 
+- Upon successful registration, the trigger automatically fires a function to generate the corresponding structured profile in the `public` schema, initializing quotas and default tenant roles without requiring extra API calls from the Next.js backend.
 
-* **Framework:** React / Next.js (Otimizado para implantação na Edge Network)
-* **Estilização:** Tailwind CSS v3 (Motor utilitário com diretivas avançadas de *Print Media Queries*)
-* **Integração:** Fetch API assíncrona com suporte a `multipart/form-data` para envio de binários ao servidor.
+### 3. Middleware-Level Route Security
+Client-side protection is insufficient for B2B tools. This architecture utilizes Next.js Middleware to intercept incoming requests before they hit the rendering engine.
+- Unauthenticated users attempting to access dashboard or processing routes are instantly caught and redirected to the login flow, avoiding unauthorized data fetching or flashes of protected UI.
 
-## 🚀 Como Executar (Ambiente Local)
+### 4. Payload & Resource Throttling
+Designed to integrate with heavy processing microservices (like PDF/Image OCR or Regex engines), the frontend and API layers implement hard payload limits (e.g., capping uploads at 5MB) to prevent resource exhaustion and protect downstream Python servers from heavy payload attacks.
 
-1. Clone o repositório e acesse a pasta raiz.
-2. Instale as dependências rigorosas do ecossistema:
-   ```bash
-   npm install
-Configure a variável de ambiente para apontar para a sua API Python local (ou em produção). Crie um arquivo .env.local:
+---
 
-Snippet de código
-NEXT_PUBLIC_API_URL=http://localhost:8000/api/extrair
-Levante o servidor de desenvolvimento:
+## 📈 Engineering Mindset
 
-Bash
-npm run dev
-Acesse http://localhost:3000 no seu navegador. O Tailwind compilará os estilos em tempo real.
+This repository represents the core structural work required before a single business feature is built. It highlights a focus on **security, data integrity, and automated database workflows**, proving that the infrastructure is ready to scale gracefully as new features or microservices are plugged into the ecosystem.
 
-🗺️ Roadmap Futuro (Monetização)
-Integração de Autenticação Edge-compatible (Supabase / Clerk).
-
-Tabela de rastreamento de limite de cotas (Paywall / Lock-in).
-
-Integração de Gateway de Pagamento para transição Freemium -> Pro.
-
-
-***
+---
+*Developed by **João Gabriel** — Building scalable infrastructure for corporate environments.*
